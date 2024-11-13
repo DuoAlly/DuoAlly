@@ -1,32 +1,39 @@
-# Simple Chatbot using Python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch
 
-# Define responses
-responses = {
-    "hi": "Hello! How can I help you today?",
-    "hello": "Hi there! What can I do for you?",
-    "how are you": "I'm just a bunch of code, but thanks for asking! How can I assist you?",
-    "what is your name": "I'm a simple Python chatbot created to help you!",
-    "bye": "Goodbye! Have a nice day!",
-    "help": "I'm here to help! You can ask me questions, say 'hi', or type 'bye' to end the conversation.",
-}
+# Load a pre-trained language model and tokenizer
+model_name = "microsoft/DialoGPT-small"  # You can also use 'gpt2' or another conversational model
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForCausalLM.from_pretrained(model_name)
 
-# Function to handle user input
-def chatbot_response(user_input):
-    user_input = user_input.lower()  # Convert input to lowercase
-    # Check if the input matches any predefined response
-    for key in responses:
-        if key in user_input:
-            return responses[key]
-    return "I'm sorry, I don't understand that. Can you try rephrasing?"
+# Chatbot conversation function
+def chat_with_model(input_text, chat_history_ids=None):
+    # Encode user input and generate a response
+    new_input_ids = tokenizer.encode(input_text + tokenizer.eos_token, return_tensors="pt")
 
-# Main chatbot loop
-print("Chatbot: Hi! I'm your chatbot. Type 'bye' to end the conversation.")
+    # Append new user input to the chat history and generate response
+    bot_output = model.generate(
+        torch.cat([chat_history_ids, new_input_ids], dim=-1) if chat_history_ids is not None else new_input_ids,
+        max_length=1000,
+        pad_token_id=tokenizer.eos_token_id,
+        do_sample=True,
+        top_k=50,
+        top_p=0.95,
+        temperature=0.7,
+    )
+
+    # Decode and print the response
+    response = tokenizer.decode(bot_output[:, chat_history_ids.shape[-1]:][0], skip_special_tokens=True)
+    return response, bot_output
+
+# Main loop for the chatbot
+print("Chatbot: Hi! I'm a chatbot powered by a language model. Type 'exit' to end the conversation.")
+chat_history_ids = None
 while True:
     user_input = input("You: ")
-    if user_input.lower() == "bye":
-        print("Chatbot:", responses["bye"])
+    if user_input.lower() == "exit":
+        print("Chatbot: Goodbye! Have a nice day!")
         break
     else:
-        # Get chatbot response
-        response = chatbot_response(user_input)
+        response, chat_history_ids = chat_with_model(user_input, chat_history_ids)
         print("Chatbot:", response)
