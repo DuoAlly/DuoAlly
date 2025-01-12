@@ -1,7 +1,7 @@
 # DuoAlly
 ## AI Companion for Single-Player Games
 
-<img src="https://github.com/user-attachments/assets/1009a9e5-099b-4e88-b103-1468f60e1357" alt="DuoAlly" width="400"/>
+(ADD NEW IMAGE HERE)
 
 **DuoAlly** is a generative AI companion designed to enhance the solo gaming experience across genres like action, adventure, role-playing, horror, and puzzle games. DuoAlly acts as a trusted "duo" or "ally" in real-time, providing support, guidance, and companionship throughout single-player games.
 
